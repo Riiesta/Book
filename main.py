@@ -1,3 +1,7 @@
+import tkinter as tk
+from tkinter import messagebox, simpledialog
+
+
 class Book:
     counter = 0
 
@@ -19,70 +23,71 @@ class Library:
     def add_book(self, title, author):
         book = Book(title, author)
         self.books.append(book)
-        print("Книга успешно добавлена!")
 
     def get_book(self, book_id):
         for book in self.books:
             if book.id == book_id and book.status == "доступна":
                 book.status = "взята"
-                print("Книга успешно взята!")
-                return
-        print("Книга недоступна или не найдена.")
+                return "Книга успешно взята!"
+        return "Книга недоступна или не найдена."
 
     def return_book(self, book_id):
         for book in self.books:
             if book.id == book_id and book.status == "взята":
                 book.status = "доступна"
-                print("Книга успешно возвращена!")
-                return
-        print("Книга не найдена.")
+                return "Книга успешно возвращена!"
+        return "Книга не найдена."
 
     def display_books(self):
-        for book in self.books:
-            print(book)
-
-    def search_book(self, query):
-        for book in self.books:
-            if query.lower() in book.title.lower() or query.lower() in book.author.lower():
-                print(book)
+        return '\n'.join(str(book) for book in self.books)
 
 
-def main():
-    library = Library()
+class LibraryApp:
+    def __init__(self, root):
+        self.library = Library()
 
-    while True:
-        print("""
-1. Добавить книгу
-2. Взять книгу
-3. Вернуть книгу
-4. Просмотреть все книги
-5. Поиск книги
-6. Выход
-""")
-        choice = int(input("Выберите действие: "))
+        self.title_label = tk.Label(root, text="Библиотека книг", font=("Arial", 24))
+        self.title_label.pack(pady=20)
 
-        if choice == 1:
-            title = input("Введите название книги: ")
-            author = input("Введите автора книги: ")
-            library.add_book(title, author)
-        elif choice == 2:
-            book_id = int(input("Введите ID книги: "))
-            library.get_book(book_id)
-        elif choice == 3:
-            book_id = int(input("Введите ID книги: "))
-            library.return_book(book_id)
-        elif choice == 4:
-            library.display_books()
-        elif choice == 5:
-            query = input("Введите название или автора книги для поиска: ")
-            library.search_book(query)
-        elif choice == 6:
-            print("Выход из программы.")
-            break
-        else:
-            print("Неправильный выбор. Пожалуйста, попробуйте еще раз.")
+        self.add_book_btn = tk.Button(root, text="Добавить книгу", command=self.add_book)
+        self.add_book_btn.pack(pady=10)
+
+        self.borrow_book_btn = tk.Button(root, text="Взять книгу", command=self.borrow_book)
+        self.borrow_book_btn.pack(pady=10)
+
+        self.return_book_btn = tk.Button(root, text="Вернуть книгу", command=self.return_book)
+        self.return_book_btn.pack(pady=10)
+
+        self.display_books_btn = tk.Button(root, text="Просмотреть все книги", command=self.display_books)
+        self.display_books_btn.pack(pady=10)
+
+    def add_book(self):
+        title = simpledialog.askstring("Добавление книги", "Введите название книги:")
+        author = simpledialog.askstring("Добавление книги", "Введите автора книги:")
+        if title and author:
+            self.library.add_book(title, author)
+            messagebox.showinfo("Успех", "Книга успешно добавлена!")
+
+    def borrow_book(self):
+        book_id = simpledialog.askinteger("Взять книгу", "Введите ID книги:")
+        if book_id:
+            result = self.library.get_book(book_id)
+            messagebox.showinfo("Информация", result)
+
+    def return_book(self):
+        book_id = simpledialog.askinteger("Вернуть книгу", "Введите ID книги:")
+        if book_id:
+            result = self.library.return_book(book_id)
+            messagebox.showinfo("Информация", result)
+
+    def display_books(self):
+        books = self.library.display_books()
+        messagebox.showinfo("Все книги", books or "Библиотека пуста")
 
 
 if __name__ == "__main__":
-    main()
-
+    root = tk.Tk()
+    root.title("Библиотека книг")
+    root.geometry("300x300")
+    app = LibraryApp(root)
+    root.mainloop()
